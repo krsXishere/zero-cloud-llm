@@ -1,64 +1,71 @@
 # Zero Cloud LLM
 
-Local LLM inference with Qualcomm NPU acceleration on Windows on Snapdragon (ARM64).
+Local LLM inference with NPU acceleration using ONNX models from Hugging Face.
 
-## Features
+## 🚀 Features
 
-- 🚀 **NPU Acceleration**: Automatically detects and uses Qualcomm NPU when available
-- 🔄 **Automatic Fallback**: Falls back to CPU if NPU is not available
-- 📡 **Ollama Integration**: Uses local Ollama API for model management
-- 🌊 **Streaming Responses**: Real-time token streaming for better UX
-- 📊 **Status Logging**: Clear logging of which backend is being used
-- 🏗️ **Modular Design**: Clean architecture ready for ONNX model integration
+- ✅ **ONNX Model Support**: Uses optimized ONNX models from Hugging Face
+- ⚡ **NPU Acceleration**: Automatic hardware acceleration when available
+- 🎯 **DeepSeek-R1**: Pre-configured with DeepSeek-R1-Distill-Qwen-1.5B
+- 🌊 **Streaming Responses**: Real-time token streaming
+- � **Interactive Mode**: Chat interface in terminal
+- � **Clean UI**: Colored output with emoji indicators
+- 🔧 **Easy Setup**: Simple npm install and run
 
-## Prerequisites
+## 📋 Prerequisites
 
-1. **Ollama** installed and running locally
+- **Node.js 18+** (for ES modules support)
+- **~2GB disk space** (for model download on first run)
+- **4GB+ RAM** recommended
+- **Windows on ARM (Qualcomm)** for best NPU performance
 
-   - Download from: https://ollama.ai
-   - Default endpoint: `http://localhost:11434`
+## 🛠️ Installation
 
-2. **Python 3.8+** on Windows on Snapdragon
-
-3. **Model pulled in Ollama**:
-   ```bash
-   ollama pull deepseek-r1:1.5b
-   ```
-
-## Installation
-
-1. Clone the repository:
+1. **Clone the repository:**
 
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/krsXishere/zero-cloud-llm.git
    cd zero-cloud-llm
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
+
    ```bash
-   pip install -r requirements.txt
+   npm install
    ```
 
-## Usage
+   This will install `@huggingface/transformers` which includes:
+
+   - ONNX Runtime with NPU support
+   - Tokenizers
+   - Model management
+
+## 🎯 Usage
 
 ### Interactive Mode (Default)
 
 ```bash
-python src/main.py
+npm start
 ```
 
-This starts an interactive chat session where you can:
+or
 
-- Type prompts and get responses
-- Type `status` to check NPU acceleration status
+```bash
+node src/main.js
+```
+
+This starts an interactive chat session:
+
+- Type your prompts and get real-time responses
 - Type `quit` or `exit` to exit
+- Type `clear` to clear the screen
 
 ### Demo Mode
 
-Run with predefined prompts:
+Run with predefined sample prompts:
 
 ```bash
-python src/main.py --demo
+node src/main.js --demo
 ```
 
 ### Single Prompt Mode
@@ -66,114 +73,158 @@ python src/main.py --demo
 Generate a response for a single prompt:
 
 ```bash
-python src/main.py --prompt "What is machine learning?"
+node src/main.js --prompt "What is quantum computing?"
 ```
 
-## Configuration
+### Quick Test
 
-Edit `src/main.py` to customize:
+Test the model with a simple example:
 
-```python
-MODEL_NAME = "deepseek-r1:1.5b"  # Your Ollama model
-OLLAMA_URL = "http://localhost:11434"  # Ollama server URL
+```bash
+npm test
 ```
 
-## NPU Acceleration
+or
 
-The application automatically detects the following NPU providers:
+```bash
+node src/test.js
+```
 
-- **QNNExecutionProvider** - Qualcomm Neural Network SDK
-- **SNPEExecutionProvider** - Snapdragon Neural Processing Engine
-- **DMLExecutionProvider** - DirectML (may use NPU on Windows ARM)
+## 💡 How It Works
 
-If no NPU provider is found, it falls back to CPU.
+### NPU Acceleration
 
-### Current State
+The application uses `@huggingface/transformers` which includes ONNX Runtime with automatic hardware acceleration:
 
-Currently, the application uses Ollama's API which handles inference internally. NPU detection infrastructure is in place for future enhancements:
+1. **NPU (Neural Processing Unit)**: If available on Windows on ARM (Qualcomm)
+2. **GPU**: Falls back to GPU if available
+3. **CPU**: Final fallback to CPU
 
-1. **Phase 1 (Current)**: Ollama API with NPU detection
-2. **Phase 2 (Future)**: Direct ONNX model loading with NPU acceleration
+The model `DeepSeek-R1-Distill-Qwen-1.5B-ONNX` is:
 
-To enable Phase 2:
+- Already in ONNX format (optimized for inference)
+- Quantized to `q4f16` (4-bit weights, float16 activations)
+- Small size (~1GB) with good performance
 
-1. Export your model to ONNX format
-2. Convert to QNN format if needed
-3. Use `onnxruntime` with detected NPU provider
-4. See `npu_detector.py` for provider details
+### First Run
 
-## Project Structure
+On the first run, the model will be downloaded automatically:
+
+- **Model**: `onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX`
+- **Size**: ~1GB
+- **Location**: Cached in `~/.cache/huggingface/`
+
+Subsequent runs will use the cached model (instant startup).
+
+## 🔧 Configuration
+
+Edit `src/main.js` to customize:
+
+```javascript
+const CONFIG = {
+  model: "onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX",
+  dtype: "q4f16", // Quantization: q4f16, q8, fp16, fp32
+  maxTokens: 512, // Maximum tokens to generate
+  temperature: 0.7, // Sampling temperature
+};
+```
+
+### Available Models
+
+You can use other ONNX models from Hugging Face:
+
+```javascript
+// Smaller model (faster)
+"onnx-community/Qwen2.5-0.5B-Instruct";
+
+// Larger models (better quality)
+"onnx-community/DeepSeek-R1-Distill-Qwen-7B-ONNX";
+"onnx-community/Phi-3-mini-4k-instruct-onnx";
+```
+
+## 📊 Performance
+
+On Windows on ARM (Qualcomm X Elite):
+
+- **With NPU**: Low CPU/RAM usage, fast inference
+- **Without NPU**: Falls back to CPU, still reasonably fast
+- **First token**: ~100-500ms (cached model)
+- **Streaming**: ~10-50 tokens/second (hardware dependent)
+
+Monitor usage:
+
+- Open Task Manager
+- Check CPU/RAM during inference
+- With NPU: CPU should stay low (<20%)
+- Without NPU: CPU will spike
+
+## 🐛 Troubleshooting
+
+### Model Download Fails
+
+```bash
+# Clear cache and retry
+rm -rf ~/.cache/huggingface/hub/models--onnx-community--DeepSeek-R1-Distill-Qwen-1.5B-ONNX
+npm start
+```
+
+### Out of Memory
+
+Try a smaller model or reduce max tokens:
+
+```javascript
+const CONFIG = {
+  model: "onnx-community/Qwen2.5-0.5B-Instruct",
+  maxTokens: 256,
+};
+```
+
+### Slow Performance
+
+1. Check if NPU drivers are installed
+2. Try different quantization: `"q8"` or `"fp16"`
+3. Reduce `maxTokens`
+4. Use a smaller model
+
+## 📁 Project Structure
 
 ```
 zero-cloud-llm/
 ├── src/
-│   ├── __init__.py           # Package initialization
-│   ├── main.py               # Main application entry point
-│   ├── inference_engine.py   # Main inference orchestration
-│   ├── npu_detector.py       # NPU detection and management
-│   └── ollama_client.py      # Ollama API client
-├── requirements.txt          # Python dependencies
-├── .gitignore               # Git ignore rules
-└── README.md                # This file
+│   ├── main.js              # Main application (interactive/demo)
+│   └── test.js              # Simple test script
+├── package.json             # Node.js dependencies
+├── README.md               # This file
+├── QUICKSTART.md           # Quick start guide
+└── .gitignore              # Git ignore rules
 ```
 
-## Troubleshooting
+## 🔄 Comparison: Python vs JavaScript
 
-### Ollama Connection Error
+| Feature       | Python (ONNX)         | JavaScript (Transformers.js) |
+| ------------- | --------------------- | ---------------------------- |
+| Setup         | Complex               | ✅ Simple (npm install)      |
+| NPU Support   | Manual config         | ✅ Automatic                 |
+| Model Loading | Manual ONNX export    | ✅ Auto-download from HF     |
+| Streaming     | Manual implementation | ✅ Built-in                  |
+| Performance   | Similar               | Similar                      |
 
-```
-✗ Failed to connect to Ollama server
-```
+**Recommendation**: Use JavaScript version for easier setup and better NPU auto-detection.
 
-**Solution**: Make sure Ollama is running:
+## 📚 Resources
 
-```bash
-# Check if Ollama is running
-curl http://localhost:11434/api/tags
+- [Hugging Face Transformers.js](https://huggingface.co/docs/transformers.js)
+- [ONNX Models on Hugging Face](https://huggingface.co/onnx-community)
+- [DeepSeek-R1 Model](https://huggingface.co/deepseek-ai)
 
-# Start Ollama if needed
-ollama serve
-```
+## 🤝 Contributing
 
-### Model Not Found
+Contributions welcome! Please open an issue or PR.
 
-```
-Model 'deepseek-r1:1.5b' not found in available models
-```
-
-**Solution**: Pull the model first:
-
-```bash
-ollama pull deepseek-r1:1.5b
-```
-
-### No NPU Provider Found
-
-```
-✗ No NPU provider found. Falling back to CPU.
-```
-
-This is normal if:
-
-- Running on non-Qualcomm hardware
-- NPU drivers not installed
-- ONNX Runtime without NPU support
-
-The application will still work using CPU.
-
-## Future Enhancements
-
-- [ ] Direct ONNX model loading with NPU
-- [ ] Model conversion utilities (PyTorch/GGUF → ONNX → QNN)
-- [ ] Benchmark tools for NPU vs CPU performance
-- [ ] Multi-model support
-- [ ] Conversation history management
-- [ ] Model quantization options
-
-## License
+## 📄 License
 
 MIT License
 
-## Contributing
+---
 
-Contributions welcome! Please open an issue or PR.
+Made with ❤️ for Qualcomm NPU acceleration

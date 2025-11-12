@@ -1,0 +1,28 @@
+{
+    "name": "zero-cloud-llm",
+    "version": "0.1.0",
+    "description": "Local LLM inference with NPU acceleration using ONNX models",
+    "type": "module",
+    "main": "src/main.js",
+    "scripts": {
+        "start": "node src/main.js",
+        "dev": "node --watch src/main.js",
+        "test": "node src/test.js"
+    },
+    "keywords": [
+        "llm",
+        "onnx",
+        "npu",
+        "deepseek",
+        "transformers",
+        "qualcomm"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@huggingface/transformers": "^3.1.2"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

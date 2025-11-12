@@ -1,5 +1,6 @@
 # Core dependencies
 requests>=2.31.0
+numpy>=1.24.0
 
 # ONNX Runtime for NPU acceleration
 # For Qualcomm NPU on Windows ARM, you may need specific builds:
@@ -8,7 +9,12 @@ requests>=2.31.0
 onnxruntime>=1.16.0
 
 # Optional: DirectML for Windows NPU/GPU acceleration
+# Uncomment this if you want to try DirectML provider:
 # onnxruntime-directml>=1.16.0
+
+# Model conversion utilities (optional)
+# optimum[onnxruntime]>=1.14.0
+# transformers>=4.35.0
 
 # Development dependencies
 pytest>=7.4.0
