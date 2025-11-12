@@ -8,8 +8,16 @@ import { createInterface } from "readline";
 
 // Configuration
 const CONFIG = {
+    // Try these models in order if one fails:
+    // 1. DeepSeek-R1 (current, may have float16 issues on some hardware)
+    // 2. Qwen2.5 (more compatible, smaller)
+    // 3. Phi-3 (Microsoft, good compatibility)
     model: "onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX",
-    dtype: "q4f16", // Quantized for better performance
+    // Alternative models if above fails:
+    // model: "onnx-community/Qwen2.5-0.5B-Instruct",
+    // model: "Xenova/gpt2",
+
+    dtype: "q4", // Will auto-fallback to q8, fp32 if needed
     maxTokens: 512,
     temperature: 0.7,
 };
@@ -52,26 +60,45 @@ async function initializePipeline() {
     );
     console.log("");
 
-    try {
-        const generator = await pipeline(
-            "text-generation",
-            CONFIG.model,
-            { dtype: CONFIG.dtype }
-        );
+    // Try different dtype configurations in order of preference
+    const dtypeOptions = [
+        { dtype: "q4", device: "auto", label: "q4 (4-bit quantized)" },
+        { dtype: "q8", device: "auto", label: "q8 (8-bit quantized)" },
+        { dtype: "fp32", device: "auto", label: "fp32 (32-bit float)" },
+        { dtype: { "": "fp32" }, device: "auto", label: "fp32 explicit" },
+    ];
 
-        console.log(colors.green + "✅ Model loaded successfully!" + colors.reset);
-        console.log(
-            colors.cyan +
-            "🚀 NPU acceleration active (if available on your hardware)" +
-            colors.reset
-        );
-        console.log("");
+    for (const option of dtypeOptions) {
+        try {
+            console.log(colors.yellow + `Trying ${option.label}...` + colors.reset);
 
-        return generator;
-    } catch (error) {
-        console.error(colors.red + "❌ Error loading model:" + colors.reset, error.message);
-        throw error;
+            const generator = await pipeline(
+                "text-generation",
+                CONFIG.model,
+                {
+                    dtype: option.dtype,
+                    device: option.device,
+                }
+            );
+
+            console.log(colors.green + `✅ Model loaded successfully with ${option.label}!` + colors.reset);
+            console.log(
+                colors.cyan +
+                "🚀 Hardware acceleration active (if available on your hardware)" +
+                colors.reset
+            );
+            console.log("");
+
+            return generator;
+        } catch (error) {
+            console.log(colors.yellow + `⚠️  ${option.label} failed: ${error.message}` + colors.reset);
+            console.log(colors.yellow + "Trying next option..." + colors.reset);
+            console.log("");
+        }
     }
+
+    // If all options fail, throw error
+    throw new Error("Failed to load model with any dtype configuration. Please check your hardware and installation.");
 }
 
 /**
