@@ -5,8 +5,8 @@ Combines NPU acceleration with Ollama model inference.
 
 import logging
 from typing import Optional, Generator
-from .npu_detector import NPUDetector
-from .ollama_client import OllamaClient
+from npu_detector import NPUDetector
+from ollama_client import OllamaClient
 
 logger = logging.getLogger(__name__)
 
