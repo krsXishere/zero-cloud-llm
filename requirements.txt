@@ -1,0 +1,16 @@
+# Core dependencies
+requests>=2.31.0
+
+# ONNX Runtime for NPU acceleration
+# For Qualcomm NPU on Windows ARM, you may need specific builds:
+# - onnxruntime-qnn (if available)
+# - onnxruntime with QNN execution provider
+onnxruntime>=1.16.0
+
+# Optional: DirectML for Windows NPU/GPU acceleration
+# onnxruntime-directml>=1.16.0
+
+# Development dependencies
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
